@@ -1,9 +1,15 @@
 import React from "react";
+import { ThemeProvider } from "emotion-theming";
+
+import theme from "./shared/Theme";
+import RouteBuilder from "./pages/RouteBuilder";
 
 function App() {
   return (
     <div className="App">
-      <p>Hi, let's build a Route Builder!</p>
+      <ThemeProvider theme={theme}>
+        <RouteBuilder />
+      </ThemeProvider>
     </div>
   );
 }
