@@ -61,11 +61,11 @@ class RouteBuilder extends Component {
 
     const lastMarker = markers[markers.length - 1];
     const markerToDelete = markers.find((marker) => marker.id === id);
-    const polylinesToDelete = polylines.map((polyline) =>
-      polyline.pointsTo.includes(id) ? polyline : null
+    const polylinesToDelete = polylines.filter((polyline) =>
+      polyline.pointsTo.includes(id) ? true : false
     );
 
-    // Remove from Map
+    // Remove from the Map
     route.removeLayer(markerToDelete);
     polylinesToDelete.map((polyline) => route.removeLayer(polyline));
 
@@ -74,11 +74,9 @@ class RouteBuilder extends Component {
       return {
         ...prevState,
         markers: prevState.markers.filter((marker) => marker.id !== id),
-        polylines: prevState.polylines.filter((polyline) => {
-          if (!polylinesToDelete.includes(polyline)) {
-            return polyline;
-          }
-        }),
+        polylines: prevState.polylines.filter((polyline) =>
+          !polylinesToDelete.includes(polyline) ? true : false
+        ),
       };
     });
 
