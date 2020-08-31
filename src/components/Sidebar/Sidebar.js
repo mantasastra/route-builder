@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Component } from "react";
 import styled from "@emotion/styled";
 
 import List from "../List/List";
@@ -18,19 +18,22 @@ const Header = styled.header`
   border-bottom: 2px solid ${({ theme }) => theme.colors.lightDark};
 `;
 
-const Sidebar = ({ markers, handleDelete }) => {
-  console.log("SIDE", markers);
-  return (
-    <Container>
-      <Header>
-        <h1>Route Builder</h1>
-      </Header>
+class Sidebar extends Component {
+  render() {
+    const { markers, handleDelete, handleDownload } = this.props;
 
-      <List markers={markers} handleDelete={handleDelete} />
+    return (
+      <Container>
+        <Header>
+          <h1>Route Builder</h1>
+        </Header>
 
-      <Button>Download your Route</Button>
-    </Container>
-  );
-};
+        <List markers={markers} handleDelete={handleDelete} />
+
+        <Button handleClick={handleDownload}>Download your Route</Button>
+      </Container>
+    );
+  }
+}
 
 export default Sidebar;

@@ -1,6 +1,8 @@
 import React, { Component } from "react";
 import styled from "@emotion/styled";
+import togpx from "togpx";
 import { featureGroup } from "leaflet";
+
 import { createMarker } from "../components/Marker/Marker";
 import { createPolyline } from "../components/Polyline/Polyline";
 import Sidebar from "../components/Sidebar/Sidebar";
@@ -17,7 +19,7 @@ class RouteBuilder extends Component {
     currentId: null,
     markers: [],
     polylines: [],
-    coordinates: [],
+    markerCoordinates: [],
   };
 
   onMapClick = () => (e) => {
@@ -31,7 +33,7 @@ class RouteBuilder extends Component {
       return {
         ...prevState,
         markers: [...prevState.markers, marker],
-        coordinates: [...prevState.coordinates, markerCoordinates],
+        markerCoordinates: [...prevState.markerCoordinates, markerCoordinates],
         currentId: marker.id,
       };
     });
@@ -40,9 +42,9 @@ class RouteBuilder extends Component {
   };
 
   addLines = () => () => {
-    const { coordinates, currentId, route } = this.state;
+    const { markerCoordinates, currentId, route } = this.state;
 
-    const polyline = createPolyline(coordinates, currentId);
+    const polyline = createPolyline(markerCoordinates, currentId);
 
     this.setState((prevState) => {
       return {
@@ -57,6 +59,7 @@ class RouteBuilder extends Component {
   handleDelete = (id) => {
     const { markers, polylines, route } = this.state;
 
+    const lastMarker = markers[markers.length - 1];
     const markerToDelete = markers.find((marker) => marker.id === id);
     const polylinesToDelete = polylines.map((polyline) =>
       polyline.pointsTo.includes(id) ? polyline : null
@@ -79,15 +82,43 @@ class RouteBuilder extends Component {
       };
     });
 
+    // This allows to draw a line from the last marker
+    // when one or more end markers are deleted
+    if (markerToDelete === lastMarker) {
+      this.state.markerCoordinates.pop();
+    }
+
+    // Reset lines and coordinates if all markers are deleted
     if (markers.length === 1) {
       this.setState((prevState) => {
         return {
           ...prevState,
           polylines: [],
-          coordinates: [],
+          markerCoordinates: [],
         };
       });
     }
+  };
+
+  handleDownload = () => {
+    const { route } = this.state;
+    const routeGeoJSON = route.toGeoJSON();
+    const routeGPX = togpx(routeGeoJSON);
+    const filename = "cross-country-route.gpx";
+
+    // Manipulate DOM to create downloadable link
+    const element = document.createElement("a");
+    element.setAttribute(
+      "href",
+      "data:text/plain;charset=utf-8, " + encodeURIComponent(routeGPX)
+    );
+    element.setAttribute("download", filename);
+
+    document.body.appendChild(element);
+
+    element.click();
+
+    document.body.removeChild(element);
   };
 
   render() {
@@ -95,7 +126,11 @@ class RouteBuilder extends Component {
 
     return (
       <Container>
-        <Sidebar markers={markers} handleDelete={this.handleDelete} />
+        <Sidebar
+          markers={markers}
+          handleDelete={this.handleDelete}
+          handleDownload={this.handleDownload}
+        />
         <Map
           onMapClick={this.onMapClick}
           addLines={this.addLines}
