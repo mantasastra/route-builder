@@ -7,6 +7,7 @@ const Container = styled.ul`
   padding: 0;
   margin-top: 5rem;
   list-style-type: none;
+  overflow: scroll;
 `;
 
 const List = ({ markers, handleDelete }) => {
