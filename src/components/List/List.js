@@ -9,12 +9,15 @@ const Container = styled.ul`
   list-style-type: none;
 `;
 
-const List = () => {
-  const list = ["Waypoint 1", "Waypoint 2", "Waypoint 3", "Waypoint 4"];
+const List = ({ markers, handleDelete }) => {
   return (
     <Container>
-      {list.map((el) => (
-        <ListElement key={el} text={el} />
+      {markers.map((marker) => (
+        <ListElement
+          key={marker.id}
+          waypoint={marker}
+          handleDelete={handleDelete}
+        />
       ))}
     </Container>
   );

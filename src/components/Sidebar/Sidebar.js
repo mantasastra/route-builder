@@ -18,14 +18,15 @@ const Header = styled.header`
   border-bottom: 2px solid ${({ theme }) => theme.colors.lightDark};
 `;
 
-const Sidebar = () => {
+const Sidebar = ({ markers, handleDelete }) => {
+  console.log("SIDE", markers);
   return (
     <Container>
       <Header>
         <h1>Route Builder</h1>
       </Header>
 
-      <List />
+      <List markers={markers} handleDelete={handleDelete} />
 
       <Button>Download your Route</Button>
     </Container>

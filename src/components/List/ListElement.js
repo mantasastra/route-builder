@@ -17,7 +17,7 @@ const RightIconContainer = styled.div`
   margin-left: auto;
 `;
 
-const Icon = styled.i`
+const Icon = styled.button`
   width: 20px;
   height: 20px;
   fill: ${({ theme }) => theme.colors.lightDark};
@@ -34,15 +34,17 @@ const Text = styled.p`
   justify-content: flex-start;
 `;
 
-const ListElement = ({ text }) => {
+const ListElement = ({ waypoint, handleDelete }) => {
+  const { id, name } = waypoint;
+
   return (
     <Container>
       <LeftIconContainer>
         <Icon as={ListIcon} />
       </LeftIconContainer>
-      <Text>{text}</Text>
+      <Text>{name}</Text>
       <RightIconContainer>
-        <Icon as={DeleteIcon} />
+        <Icon as={DeleteIcon} onClick={() => handleDelete(id)} />
       </RightIconContainer>
     </Container>
   );

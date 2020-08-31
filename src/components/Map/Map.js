@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { Component } from "react";
+import { Map as LeafletMap, tileLayer } from "leaflet";
 import styled from "@emotion/styled";
-import L from "leaflet";
 
 const Container = styled.div`
   width: 100%;
@@ -15,44 +15,45 @@ const Container = styled.div`
   }
 `;
 
-const MarkerIcon = (waypointCount) =>
-  new L.divIcon({
-    className: "marker-icon",
-    iconSize: [25, 25],
-    html: waypointCount,
-  });
+class Map extends Component {
+  constructor(props) {
+    super(props);
 
-const Map = () => {
-  let mapContainer;
-  const [waypoints, addWaypoint] = useState([]);
+    this.mapContainer = null;
+  }
 
-  useEffect(() => {
-    const map = L.map(mapContainer, {
+  createLeafletElement() {
+    return new LeafletMap(this.mapContainer, {
       layers: [
-        L.tileLayer("http://{s}.tile.osm.org/{z}/{x}/{y}.png", {
+        tileLayer("http://{s}.tile.osm.org/{z}/{x}/{y}.png", {
           attribution:
             '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
         }),
       ],
     }).locate({ setView: true, maxZoom: 16 });
+  }
 
-    map.on("click", (e) => {
-      const marker = L.marker(e.latlng, {
-        icon: MarkerIcon(1),
-        draggable: true,
-      }).addTo(map);
+  componentDidMount() {
+    this.leafletElement = this.createLeafletElement();
 
-      addWaypoint((prevState) => [
-        ...prevState,
-        {
-          id: 1,
-          coordinates: marker.getLatLng(),
-        },
-      ]);
-    });
-  }, [mapContainer]);
-  console.log(waypoints);
-  return <Container ref={(el) => (mapContainer = el)}></Container>;
-};
+    this.leafletElement.addLayer(this.props.route);
+
+    this.leafletElement.on("click", this.props.onMapClick());
+    this.leafletElement.on("click", this.props.addLines());
+  }
+
+  componentWillUnmount() {
+    this.leafletElement.off("click", this.props.onMapClick());
+    this.leafletElement.off("click", this.props.addLines());
+  }
+
+  render() {
+    return (
+      <Container ref={(el) => (this.mapContainer = el)}>
+        {this.props.children}
+      </Container>
+    );
+  }
+}
 
 export default Map;
