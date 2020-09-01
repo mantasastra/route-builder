@@ -19,8 +19,7 @@ class RouteBuilder extends Component {
     markers: [],
     markerCoordinates: [],
     polyline: {},
-    shouldUpdateMarkers: false,
-    shouldUpdatePolyline: false,
+    shouldUpdateRoute: false,
   };
 
   addMarkers = () => (e) => {
@@ -35,8 +34,7 @@ class RouteBuilder extends Component {
         ...prevState,
         markers: [...prevState.markers, marker],
         markerCoordinates: [...prevState.markerCoordinates, markerCoordinates],
-        shouldUpdateMarkers: false,
-        shouldUpdatePolyline: false,
+        shouldUpdateRoute: false,
       };
     });
 
@@ -52,8 +50,7 @@ class RouteBuilder extends Component {
       return {
         ...prevState,
         polyline,
-        shouldUpdateMarkers: false,
-        shouldUpdatePolyline: false,
+        shouldUpdateRoute: false,
       };
     });
 
@@ -93,16 +90,16 @@ class RouteBuilder extends Component {
         }),
         markerCoordinates: markerCoordinates,
         polyline,
-        shouldUpdateMarkers: false,
-        shouldUpdatePolyline: false,
+        shouldUpdateRoute: false,
       };
     });
   };
 
   /**
-   * When a marker is deleted from the list, this function
-   * deletes it from the state and the map. It then
-   * updates the markers and polylines with the new ones.
+   * When a marker (waypoint) is deleted from the list, this function
+   * deletes it from the state and the route layer.
+   * It then updates the markers and polylines with the new ones
+   * and adds it back to the route layer.
    */
   handleDelete = (id) => {
     const { markers, route } = this.state;
@@ -110,18 +107,15 @@ class RouteBuilder extends Component {
     const markersToKeep = markers.filter((marker) => marker.id !== id);
     const markerToDelete = markers.find((marker) => marker.id === id);
 
-    // Remove the marker from the route layer
     route.removeLayer(markerToDelete);
 
-    // Remove from state
     this.setState((prevState) => {
       return {
         ...prevState,
-        route: route,
+        route,
         markers: markersToKeep,
         markerCoordinates: markersToKeep.map((marker) => marker.coordinates),
-        shouldUpdateMarkers: true,
-        shouldUpdatePolyline: true,
+        shouldUpdateRoute: true,
       };
     });
 
@@ -134,7 +128,7 @@ class RouteBuilder extends Component {
   /**
    * Converts route geoJSON data to GPX
    * and creates a temporary link that allows
-   * to download the GPX data
+   * to download the GPX data.
    */
   handleDownload = () => {
     const { route, polyline } = this.state;
@@ -187,17 +181,17 @@ class RouteBuilder extends Component {
           id = id + 1;
           return marker;
         }),
-        shouldUpdateMarkers: false,
+        shouldUpdateRoute: false,
       };
     });
   };
 
   /**
-   * Removes the old polylines from the route layer.
+   * Removes the old polyline from the route layer.
    * Creates a new polyline with the current marker coordinates and
    * adds it to the route layer
    */
-  updatePolylines = () => {
+  updatePolyline = () => {
     const { route, markerCoordinates } = this.state;
 
     this.removeLayers("Polyline");
@@ -210,7 +204,7 @@ class RouteBuilder extends Component {
       return {
         ...prevState,
         polyline,
-        shouldUpdatePolyline: false,
+        shouldUpdateRoute: false,
       };
     });
   };
@@ -222,12 +216,13 @@ class RouteBuilder extends Component {
         markers: [],
         markerCoordinates: [],
         polyline: {},
-        shouldUpdateMarkers: false,
-        shouldUpdatePolyline: false,
+        shouldUpdateRoute: false,
       };
     });
   };
 
+  // Allows to remove multiple layers from the route layer
+  // based on the provided type
   removeLayers = (type) => {
     const { route } = this.state;
 
@@ -241,14 +236,11 @@ class RouteBuilder extends Component {
   };
 
   componentDidUpdate() {
-    const { shouldUpdateMarkers, shouldUpdatePolyline } = this.state;
+    const { shouldUpdateRoute } = this.state;
 
-    if (shouldUpdateMarkers) {
+    if (shouldUpdateRoute) {
       this.updateMarkers();
-    }
-
-    if (shouldUpdatePolyline) {
-      this.updatePolylines();
+      this.updatePolyline();
     }
   }
 
