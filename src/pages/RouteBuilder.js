@@ -3,7 +3,7 @@ import styled from "@emotion/styled";
 import togpx from "togpx";
 import { featureGroup } from "leaflet";
 
-import { createMarker } from "../components/Marker/Marker";
+import { createMarker, MarkerIcon } from "../components/Marker/Marker";
 import { createPolyline } from "../components/Polyline/Polyline";
 import Sidebar from "../components/Sidebar/Sidebar";
 import Map from "../components/Map/Map";
@@ -18,8 +18,9 @@ class RouteBuilder extends Component {
     route: new featureGroup(),
     currentId: null,
     markers: [],
-    polylines: [],
     markerCoordinates: [],
+    polylines: [],
+    shouldUpdatePolyline: false,
   };
 
   onMapClick = () => (e) => {
@@ -50,6 +51,7 @@ class RouteBuilder extends Component {
       return {
         ...prevState,
         polylines: [...prevState.polylines, polyline],
+        shouldUpdatePolyline: false,
       };
     });
 
@@ -67,34 +69,34 @@ class RouteBuilder extends Component {
 
     // Remove from the Map
     route.removeLayer(markerToDelete);
-    polylinesToDelete.map((polyline) => route.removeLayer(polyline));
+    polylines.map((polyline) => route.removeLayer(polyline));
 
     // Remove from state
     this.setState((prevState) => {
       return {
         ...prevState,
         markers: prevState.markers.filter((marker) => marker.id !== id),
-        polylines: prevState.polylines.filter((polyline) =>
-          !polylinesToDelete.includes(polyline) ? true : false
+        markerCoordinates: prevState.markerCoordinates.filter(
+          (_, index) => index + 1 !== id
         ),
+        polylines: prevState.polylines.filter(
+          (polyline) => !polylinesToDelete.includes(polyline)
+        ),
+        shouldUpdatePolyline: true,
       };
     });
 
-    // This allows to draw a line from the last marker
-    // when one or more end markers are deleted
+    this.updateMarkers();
+
+    // This allows to draw a line from the last marker to the next
+    // when one or more end markers are deleted from the list
     if (markerToDelete === lastMarker) {
       this.state.markerCoordinates.pop();
     }
 
     // Reset lines and coordinates if all markers are deleted
     if (markers.length === 1) {
-      this.setState((prevState) => {
-        return {
-          ...prevState,
-          polylines: [],
-          markerCoordinates: [],
-        };
-      });
+      this.resetState();
     }
   };
 
@@ -105,19 +107,73 @@ class RouteBuilder extends Component {
     const filename = "cross-country-route.gpx";
 
     // Manipulate DOM to create downloadable link
-    const element = document.createElement("a");
-    element.setAttribute(
+    const downloadLink = document.createElement("a");
+    downloadLink.setAttribute(
       "href",
       "data:text/plain;charset=utf-8, " + encodeURIComponent(routeGPX)
     );
-    element.setAttribute("download", filename);
+    downloadLink.setAttribute("download", filename);
 
-    document.body.appendChild(element);
+    document.body.appendChild(downloadLink);
 
-    element.click();
+    downloadLink.click();
 
-    document.body.removeChild(element);
+    document.body.removeChild(downloadLink);
   };
+
+  updateMarkers = () => {
+    const { markers, route } = this.state;
+
+    markers.map((marker) => route.removeLayer(marker));
+
+    let id = 1;
+    this.setState((prevState) => {
+      return {
+        ...prevState,
+        markers: prevState.markers.map((marker) => {
+          marker.id = id;
+          marker.name = `Waypoint ${id}`;
+          marker.options.icon = MarkerIcon(id);
+
+          marker.addTo(route);
+
+          id = id + 1;
+          return marker;
+        }),
+      };
+    });
+  };
+
+  resetState = () => {
+    this.setState((prevState) => {
+      return {
+        ...prevState,
+        currentId: null,
+        markers: [],
+        markerCoordinates: [],
+        polylines: [],
+        shouldUpdatePolyline: false,
+      };
+    });
+  };
+
+  componentDidUpdate() {
+    const {
+      route,
+      currentId,
+      markerCoordinates,
+      polylines,
+      shouldUpdatePolyline,
+    } = this.state;
+
+    if (shouldUpdatePolyline) {
+      const polyline = createPolyline(markerCoordinates, currentId);
+
+      route.addLayer(polyline);
+
+      polylines.push(polyline);
+    }
+  }
 
   render() {
     const { markers, route } = this.state;
@@ -132,7 +188,6 @@ class RouteBuilder extends Component {
         <Map
           onMapClick={this.onMapClick}
           addLines={this.addLines}
-          markers={markers}
           route={route}
         />
       </Container>
