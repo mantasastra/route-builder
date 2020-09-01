@@ -1,5 +1,6 @@
-import React from "react";
+import React, { Component } from "react";
 import styled from "@emotion/styled";
+import { ReactSortable } from "react-sortablejs";
 
 import ListElement from "./ListElement";
 
@@ -10,18 +11,27 @@ const Container = styled.ul`
   overflow: scroll;
 `;
 
-const List = ({ markers, handleDelete }) => {
-  return (
-    <Container data-testid="list">
-      {markers.map((marker) => (
-        <ListElement
-          key={marker.id}
-          waypoint={marker}
-          handleDelete={handleDelete}
-        />
-      ))}
-    </Container>
-  );
-};
+class List extends Component {
+  render() {
+    const { markers, handleSort, handleDelete } = this.props;
+
+    return (
+      <Container data-testid="list">
+        <ReactSortable
+          list={markers}
+          setList={(newState) => handleSort(newState)}
+        >
+          {markers.map((marker) => (
+            <ListElement
+              key={marker.id}
+              waypoint={marker}
+              handleDelete={handleDelete}
+            />
+          ))}
+        </ReactSortable>
+      </Container>
+    );
+  }
+}
 
 export default List;

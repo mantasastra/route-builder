@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Component } from "react";
 import styled from "@emotion/styled";
 
 import { ReactComponent as ListIcon } from "../../assets/images/list.svg";
@@ -34,24 +34,27 @@ const Text = styled.p`
   justify-content: flex-start;
 `;
 
-const ListElement = ({ waypoint, handleDelete }) => {
-  const { id, name } = waypoint;
+class ListElement extends Component {
+  render() {
+    const { waypoint, handleDelete } = this.props;
+    const { id, name } = waypoint;
 
-  return (
-    <Container data-testid="list-element">
-      <LeftIconContainer>
-        <Icon data-testid="drag-handler" as={ListIcon} />
-      </LeftIconContainer>
-      <Text>{name}</Text>
-      <RightIconContainer>
-        <Icon
-          data-testid="delete-button"
-          as={DeleteIcon}
-          onClick={() => handleDelete(id)}
-        />
-      </RightIconContainer>
-    </Container>
-  );
-};
+    return (
+      <Container data-testid="list-element">
+        <LeftIconContainer>
+          <Icon data-testid="drag-handler" as={ListIcon} />
+        </LeftIconContainer>
+        <Text>{name}</Text>
+        <RightIconContainer>
+          <Icon
+            data-testid="delete-button"
+            as={DeleteIcon}
+            onClick={() => handleDelete(id)}
+          />
+        </RightIconContainer>
+      </Container>
+    );
+  }
+}
 
 export default ListElement;

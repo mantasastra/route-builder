@@ -33,9 +33,10 @@ class RouteBuilder extends Component {
     this.setState((prevState) => {
       return {
         ...prevState,
+        currentId: marker.id,
         markers: [...prevState.markers, marker],
         markerCoordinates: [...prevState.markerCoordinates, markerCoordinates],
-        currentId: marker.id,
+        shouldUpdatePolyline: false,
       };
     });
 
@@ -58,17 +59,50 @@ class RouteBuilder extends Component {
     polyline.addTo(route);
   };
 
+  handleSort = (rearrangedMarkers) => {
+    const { route, currentId, markers, polylines } = this.state;
+
+    polylines.map((polyline) => route.removeLayer(polyline));
+
+    const markerCoordinates = rearrangedMarkers.map(
+      (marker) => marker.coordinates
+    );
+
+    const polyline = createPolyline(markerCoordinates, currentId);
+
+    route.addLayer(polyline);
+    markers.map((marker) => route.removeLayer(marker));
+
+    let id = 1;
+    this.setState((prevState) => {
+      return {
+        ...prevState,
+        markers: rearrangedMarkers.map((marker) => {
+          marker.id = id;
+          marker.name = `Waypoint ${id}`;
+          marker.options.icon = MarkerIcon(id);
+
+          marker.addTo(route);
+
+          id = id + 1;
+          return marker;
+        }),
+        markerCoordinates: markerCoordinates,
+        polylines: [polyline],
+        shouldUpdatePolyline: false,
+      };
+    });
+  };
+
   handleDelete = (id) => {
     const { markers, polylines, route } = this.state;
 
     const lastMarker = markers[markers.length - 1];
     const markerToDelete = markers.find((marker) => marker.id === id);
-    const polylinesToDelete = polylines.filter((polyline) =>
-      polyline.pointsTo.includes(id) ? true : false
-    );
 
     // Remove from the Map
     route.removeLayer(markerToDelete);
+
     polylines.map((polyline) => route.removeLayer(polyline));
 
     // Remove from state
@@ -79,9 +113,7 @@ class RouteBuilder extends Component {
         markerCoordinates: prevState.markerCoordinates.filter(
           (_, index) => index + 1 !== id
         ),
-        polylines: prevState.polylines.filter(
-          (polyline) => !polylinesToDelete.includes(polyline)
-        ),
+        polylines: [],
         shouldUpdatePolyline: true,
       };
     });
@@ -167,6 +199,8 @@ class RouteBuilder extends Component {
     } = this.state;
 
     if (shouldUpdatePolyline) {
+      polylines.map((polyline) => route.removeLayer(polyline));
+
       const polyline = createPolyline(markerCoordinates, currentId);
 
       route.addLayer(polyline);
@@ -182,6 +216,7 @@ class RouteBuilder extends Component {
       <Container>
         <Sidebar
           markers={markers}
+          handleSort={this.handleSort}
           handleDelete={this.handleDelete}
           handleDownload={this.handleDownload}
         />

@@ -20,7 +20,7 @@ const Header = styled.header`
 
 class Sidebar extends Component {
   render() {
-    const { markers, handleDelete, handleDownload } = this.props;
+    const { markers, handleSort, handleDelete, handleDownload } = this.props;
 
     return (
       <Container>
@@ -28,7 +28,11 @@ class Sidebar extends Component {
           <h1>Route Builder</h1>
         </Header>
 
-        <List markers={markers} handleDelete={handleDelete} />
+        <List
+          markers={markers}
+          handleSort={handleSort}
+          handleDelete={handleDelete}
+        />
 
         <Button handleClick={handleDownload}>Download your Route</Button>
       </Container>
