@@ -38,13 +38,17 @@ const ListElement = ({ waypoint, handleDelete }) => {
   const { id, name } = waypoint;
 
   return (
-    <Container>
+    <Container data-testid="list-element">
       <LeftIconContainer>
-        <Icon as={ListIcon} />
+        <Icon data-testid="drag-handler" as={ListIcon} />
       </LeftIconContainer>
       <Text>{name}</Text>
       <RightIconContainer>
-        <Icon as={DeleteIcon} onClick={() => handleDelete(id)} />
+        <Icon
+          data-testid="delete-button"
+          as={DeleteIcon}
+          onClick={() => handleDelete(id)}
+        />
       </RightIconContainer>
     </Container>
   );

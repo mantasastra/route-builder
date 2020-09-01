@@ -12,7 +12,7 @@ const Container = styled.ul`
 
 const List = ({ markers, handleDelete }) => {
   return (
-    <Container>
+    <Container data-testid="list">
       {markers.map((marker) => (
         <ListElement
           key={marker.id}

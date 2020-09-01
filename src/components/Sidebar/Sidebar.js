@@ -24,7 +24,7 @@ class Sidebar extends Component {
 
     return (
       <Container>
-        <Header>
+        <Header data-testid="header">
           <h1>Route Builder</h1>
         </Header>
 

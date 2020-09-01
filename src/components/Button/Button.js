@@ -20,7 +20,9 @@ const CustomButton = styled.button`
 `;
 
 const Button = ({ handleClick, children }) => (
-  <CustomButton onClick={() => handleClick()}>{children}</CustomButton>
+  <CustomButton data-testid="custom-button" onClick={() => handleClick()}>
+    {children}
+  </CustomButton>
 );
 
 export default Button;
