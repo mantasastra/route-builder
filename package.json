@@ -2,6 +2,7 @@
   "name": "route-builder",
   "version": "0.1.0",
   "private": true,
+  "author": "Mantas Astrauskas",
   "dependencies": {
     "@emotion/core": "^10.0.35",
     "@emotion/styled": "^10.0.27",
