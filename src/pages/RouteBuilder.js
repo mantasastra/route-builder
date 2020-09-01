@@ -11,6 +11,12 @@ import Map from "../components/Map/Map";
 const Container = styled.div`
   display: flex;
   height: 100vh;
+
+  @media only screen and (max-width: 800px) {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
 `;
 
 class RouteBuilder extends Component {

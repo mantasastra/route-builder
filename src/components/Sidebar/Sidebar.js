@@ -11,6 +11,10 @@ const Container = styled.div`
   width: 700px;
   background-color: ${({ theme }) => theme.colors.dark};
   color: ${({ theme }) => theme.colors.white};
+
+  @media only screen and (max-width: 800px) {
+    width: 100%;
+  }
 `;
 
 const Header = styled.header`

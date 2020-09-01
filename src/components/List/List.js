@@ -9,6 +9,11 @@ const Container = styled.ul`
   margin-top: 5rem;
   list-style-type: none;
   overflow: scroll;
+
+  @media only screen and (max-width: 800px) {
+    margin-top: auto;
+    height: 125px;
+  }
 `;
 
 class List extends Component {

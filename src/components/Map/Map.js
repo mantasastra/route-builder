@@ -13,6 +13,10 @@ const Container = styled.div`
     color: ${({ theme }) => theme.colors.white};
     border-radius: 12px;
   }
+
+  @media only screen and (max-width: 800px) {
+    height: 100vh;
+  }
 `;
 
 class Map extends Component {

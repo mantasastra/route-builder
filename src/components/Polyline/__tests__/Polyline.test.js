@@ -7,6 +7,6 @@ describe("Polyline", () => {
 
     const polyline = createPolyline(coordinates, currentId);
 
-    expect(polyline).toHaveProperty("pointsTo", [1, 2]);
+    expect(polyline).toHaveProperty("type", "Polyline");
   });
 });

@@ -8,11 +8,16 @@ import List from "../List";
 describe("List", () => {
   test("should render a list with list elements", () => {
     const markers = [markerMock(1)];
+    const handleSort = jest.fn();
     const handleDelete = jest.fn();
 
     const { getByTestId } = render(
       <MockTheme>
-        <List markers={markers} handleDelete={handleDelete} />
+        <List
+          markers={markers}
+          handleSort={handleSort}
+          handleDelete={handleDelete}
+        />
       </MockTheme>
     );
     const list = getByTestId("list");
@@ -24,11 +29,16 @@ describe("List", () => {
 
   test("should render a list with multiple list elements", () => {
     const markers = [markerMock(1), markerMock(2), markerMock(3)];
+    const handleSort = jest.fn();
     const handleDelete = jest.fn();
 
     const { getByText } = render(
       <MockTheme>
-        <List markers={markers} handleDelete={handleDelete} />
+        <List
+          markers={markers}
+          handleSort={handleSort}
+          handleDelete={handleDelete}
+        />
       </MockTheme>
     );
 

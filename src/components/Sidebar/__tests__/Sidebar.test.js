@@ -7,6 +7,7 @@ import Sidebar from "../Sidebar";
 describe("Sidebar", () => {
   test("should render a header", () => {
     const markers = [];
+    const handleSort = jest.fn();
     const handleDelete = jest.fn();
     const handleDownload = jest.fn();
 
@@ -14,6 +15,7 @@ describe("Sidebar", () => {
       <MockTheme>
         <Sidebar
           markers={markers}
+          handleSort={handleSort}
           handleDelete={handleDelete}
           handleDownload={handleDownload}
         />
