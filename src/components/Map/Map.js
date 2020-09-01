@@ -25,9 +25,9 @@ class Map extends Component {
   createLeafletElement() {
     return new LeafletMap(this.mapContainer, {
       layers: [
-        tileLayer("http://{s}.tile.osm.org/{z}/{x}/{y}.png", {
+        tileLayer("https://{s}.tile.osm.org/{z}/{x}/{y}.png", {
           attribution:
-            '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+            '&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors',
         }),
       ],
     }).locate({ setView: true, maxZoom: 16 });
