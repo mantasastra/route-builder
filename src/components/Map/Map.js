@@ -38,12 +38,12 @@ class Map extends Component {
 
     this.leafletElement.addLayer(this.props.route);
 
-    this.leafletElement.on("click", this.props.onMapClick());
+    this.leafletElement.on("click", this.props.addMarkers());
     this.leafletElement.on("click", this.props.addLines());
   }
 
   componentWillUnmount() {
-    this.leafletElement.off("click", this.props.onMapClick());
+    this.leafletElement.off("click", this.props.addMarkers());
     this.leafletElement.off("click", this.props.addLines());
   }
 

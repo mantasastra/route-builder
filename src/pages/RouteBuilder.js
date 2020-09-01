@@ -16,14 +16,14 @@ const Container = styled.div`
 class RouteBuilder extends Component {
   state = {
     route: new featureGroup(),
-    currentId: null,
     markers: [],
     markerCoordinates: [],
-    polylines: [],
+    polyline: {},
+    shouldUpdateMarkers: false,
     shouldUpdatePolyline: false,
   };
 
-  onMapClick = () => (e) => {
+  addMarkers = () => (e) => {
     const { markers, route } = this.state;
     const coordinates = e.latlng;
     const markerCoordinates = [coordinates.lat, coordinates.lng];
@@ -33,9 +33,9 @@ class RouteBuilder extends Component {
     this.setState((prevState) => {
       return {
         ...prevState,
-        currentId: marker.id,
         markers: [...prevState.markers, marker],
         markerCoordinates: [...prevState.markerCoordinates, markerCoordinates],
+        shouldUpdateMarkers: false,
         shouldUpdatePolyline: false,
       };
     });
@@ -44,14 +44,15 @@ class RouteBuilder extends Component {
   };
 
   addLines = () => () => {
-    const { markerCoordinates, currentId, route } = this.state;
+    const { markerCoordinates, route } = this.state;
 
-    const polyline = createPolyline(markerCoordinates, currentId);
+    const polyline = createPolyline(markerCoordinates);
 
     this.setState((prevState) => {
       return {
         ...prevState,
-        polylines: [...prevState.polylines, polyline],
+        polyline,
+        shouldUpdateMarkers: false,
         shouldUpdatePolyline: false,
       };
     });
@@ -59,19 +60,22 @@ class RouteBuilder extends Component {
     polyline.addTo(route);
   };
 
+  /**
+   * When the list is re-arranged, this function updates the markers
+   * and adds updated markers and polylines to the route layer
+   */
   handleSort = (rearrangedMarkers) => {
-    const { route, currentId, markers, polylines } = this.state;
-
-    polylines.map((polyline) => route.removeLayer(polyline));
+    const { route, markers } = this.state;
 
     const markerCoordinates = rearrangedMarkers.map(
       (marker) => marker.coordinates
     );
 
-    const polyline = createPolyline(markerCoordinates, currentId);
-
-    route.addLayer(polyline);
     markers.map((marker) => route.removeLayer(marker));
+    this.removeLayers("Polyline");
+
+    const polyline = createPolyline(markerCoordinates);
+    route.addLayer(polyline);
 
     let id = 1;
     this.setState((prevState) => {
@@ -88,52 +92,58 @@ class RouteBuilder extends Component {
           return marker;
         }),
         markerCoordinates: markerCoordinates,
-        polylines: [polyline],
+        polyline,
+        shouldUpdateMarkers: false,
         shouldUpdatePolyline: false,
       };
     });
   };
 
+  /**
+   * When a marker is deleted from the list, this function
+   * deletes it from the state and the map. It then
+   * updates the markers and polylines with the new ones.
+   */
   handleDelete = (id) => {
-    const { markers, polylines, route } = this.state;
+    const { markers, route } = this.state;
 
-    const lastMarker = markers[markers.length - 1];
+    const markersToKeep = markers.filter((marker) => marker.id !== id);
     const markerToDelete = markers.find((marker) => marker.id === id);
 
-    // Remove from the Map
+    // Remove the marker from the route layer
     route.removeLayer(markerToDelete);
-
-    polylines.map((polyline) => route.removeLayer(polyline));
 
     // Remove from state
     this.setState((prevState) => {
       return {
         ...prevState,
-        markers: prevState.markers.filter((marker) => marker.id !== id),
-        markerCoordinates: prevState.markerCoordinates.filter(
-          (_, index) => index + 1 !== id
-        ),
-        polylines: [],
+        route: route,
+        markers: markersToKeep,
+        markerCoordinates: markersToKeep.map((marker) => marker.coordinates),
+        shouldUpdateMarkers: true,
         shouldUpdatePolyline: true,
       };
     });
 
-    this.updateMarkers();
-
-    // This allows to draw a line from the last marker to the next
-    // when one or more end markers are deleted from the list
-    if (markerToDelete === lastMarker) {
-      this.state.markerCoordinates.pop();
-    }
-
-    // Reset lines and coordinates if all markers are deleted
+    // Reset the state if all markers are deleted
     if (markers.length === 1) {
       this.resetState();
     }
   };
 
+  /**
+   * Converts route geoJSON data to GPX
+   * and creates a temporary link that allows
+   * to download the GPX data
+   */
   handleDownload = () => {
-    const { route } = this.state;
+    const { route, polyline } = this.state;
+
+    // This makes sure that only one final polyline is present
+    // in the route layer
+    this.removeLayers("Polyline");
+    route.addLayer(polyline);
+
     const routeGeoJSON = route.toGeoJSON();
     const routeGPX = togpx(routeGeoJSON);
     const filename = "cross-country-route.gpx";
@@ -153,6 +163,11 @@ class RouteBuilder extends Component {
     document.body.removeChild(downloadLink);
   };
 
+  /**
+   * Removes the old markers from the route layer.
+   * Updates the markers ID's and names with the correct id
+   * based on its place in the list and adds them back to the route layer
+   */
   updateMarkers = () => {
     const { markers, route } = this.state;
 
@@ -172,6 +187,30 @@ class RouteBuilder extends Component {
           id = id + 1;
           return marker;
         }),
+        shouldUpdateMarkers: false,
+      };
+    });
+  };
+
+  /**
+   * Removes the old polylines from the route layer.
+   * Creates a new polyline with the current marker coordinates and
+   * adds it to the route layer
+   */
+  updatePolylines = () => {
+    const { route, markerCoordinates } = this.state;
+
+    this.removeLayers("Polyline");
+
+    const polyline = createPolyline(markerCoordinates);
+
+    route.addLayer(polyline);
+
+    this.setState((prevState) => {
+      return {
+        ...prevState,
+        polyline,
+        shouldUpdatePolyline: false,
       };
     });
   };
@@ -180,32 +219,36 @@ class RouteBuilder extends Component {
     this.setState((prevState) => {
       return {
         ...prevState,
-        currentId: null,
         markers: [],
         markerCoordinates: [],
-        polylines: [],
+        polyline: {},
+        shouldUpdateMarkers: false,
         shouldUpdatePolyline: false,
       };
     });
   };
 
+  removeLayers = (type) => {
+    const { route } = this.state;
+
+    for (const layer in route._layers) {
+      const layerObj = route._layers[layer];
+
+      if (layerObj["type"] === type) {
+        route.removeLayer(layerObj);
+      }
+    }
+  };
+
   componentDidUpdate() {
-    const {
-      route,
-      currentId,
-      markerCoordinates,
-      polylines,
-      shouldUpdatePolyline,
-    } = this.state;
+    const { shouldUpdateMarkers, shouldUpdatePolyline } = this.state;
+
+    if (shouldUpdateMarkers) {
+      this.updateMarkers();
+    }
 
     if (shouldUpdatePolyline) {
-      polylines.map((polyline) => route.removeLayer(polyline));
-
-      const polyline = createPolyline(markerCoordinates, currentId);
-
-      route.addLayer(polyline);
-
-      polylines.push(polyline);
+      this.updatePolylines();
     }
   }
 
@@ -221,7 +264,7 @@ class RouteBuilder extends Component {
           handleDownload={this.handleDownload}
         />
         <Map
-          onMapClick={this.onMapClick}
+          addMarkers={this.addMarkers}
           addLines={this.addLines}
           route={route}
         />

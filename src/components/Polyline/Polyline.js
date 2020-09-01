@@ -1,11 +1,11 @@
 import { polyline as LeafletPolyline } from "leaflet";
 
-export const createPolyline = (coordinates, currentId) => {
+export const createPolyline = (coordinates) => {
   const polyline = LeafletPolyline(coordinates, {
     weight: 6,
   });
 
-  polyline.pointsTo = [currentId, currentId + 1];
+  polyline.type = "Polyline";
 
   return polyline;
 };
