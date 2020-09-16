@@ -28,7 +28,7 @@ class RouteBuilder extends Component {
     shouldUpdateRoute: false,
   };
 
-  addMarkers = () => (e) => {
+  addMarkers = (e) => {
     const { markers, route } = this.state;
     const coordinates = e.latlng;
     const markerCoordinates = [coordinates.lat, coordinates.lng];
@@ -47,7 +47,7 @@ class RouteBuilder extends Component {
     marker.addTo(route);
   };
 
-  addLines = () => () => {
+  addLines = () => {
     const { markerCoordinates, route } = this.state;
 
     const polyline = createPolyline(markerCoordinates);
@@ -138,13 +138,16 @@ class RouteBuilder extends Component {
    */
   handleDownload = () => {
     const { route, polyline } = this.state;
+    const tempRoute = new featureGroup();
 
     // This makes sure that only one final polyline is present
     // in the route layer
     this.removeLayers("Polyline");
     route.addLayer(polyline);
 
-    const routeGeoJSON = route.toGeoJSON();
+    // Adds the final lines (track) to the route
+    tempRoute.addLayer(polyline);
+    const routeGeoJSON = tempRoute.toGeoJSON();
     const routeGPX = togpx(routeGeoJSON);
     const filename = "cross-country-route.gpx";
 

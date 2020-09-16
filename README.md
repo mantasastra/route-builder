@@ -1,4 +1,4 @@
-# Komoot Route Builder Challenge
+# Route Builder
 
 ## Description
 

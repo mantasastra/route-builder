@@ -1,6 +1,5 @@
-import React, { Component } from "react";
+import React, { useState } from "react";
 import styled from "@emotion/styled";
-import { ReactSortable } from "react-sortablejs";
 
 import ListElement from "./ListElement";
 
@@ -16,27 +15,27 @@ const Container = styled.ul`
   }
 `;
 
-class List extends Component {
-  render() {
-    const { markers, handleSort, handleDelete } = this.props;
+const List = ({ markers, handleSort, handleDelete }) => {
+  const [drag, setDrag] = useState(null);
+  const [dragOver, setDragOver] = useState(null);
 
-    return (
-      <Container data-testid="list">
-        <ReactSortable
-          list={markers}
-          setList={(newState) => handleSort(newState)}
-        >
-          {markers.map((marker) => (
-            <ListElement
-              key={marker.id}
-              waypoint={marker}
-              handleDelete={handleDelete}
-            />
-          ))}
-        </ReactSortable>
-      </Container>
-    );
-  }
-}
+  return (
+    <Container data-testid="list">
+      {markers.map((marker) => (
+        <ListElement
+          key={marker.id}
+          waypoint={marker}
+          markers={markers}
+          drag={drag}
+          dragOver={dragOver}
+          setDrag={setDrag}
+          setDragOver={setDragOver}
+          handleDelete={handleDelete}
+          handleSort={handleSort}
+        />
+      ))}
+    </Container>
+  );
+};
 
 export default List;
