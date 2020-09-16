@@ -1,8 +1,8 @@
-# Route Builder
+# Cross-country Route Builder
 
 ## Description
 
-This is a React application that allows you to plan your own cross country run and download it as GPX file.
+This is a React application that allows you to plan your own cross-country run and download it as GPX file.
 
 ## Detailed description
 
